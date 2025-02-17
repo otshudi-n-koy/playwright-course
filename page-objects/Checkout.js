@@ -11,7 +11,7 @@ export class Checkout {
 
     removeCheapestProduct = async () => {
         await this.basketCards.first().waitFor()
-        const itemBeforeRemoval = await this.basketCards.count()
+        const itemsBeforeRemoval = await this.basketCards.count()
         await this.basketItemPrice.first().waitFor()
         const allPricesTexts = await this.basketItemPrice.allInnerTexts()
         // [ '499$', '599$', '320$' ] -> [ 499, 599, 320 ]
@@ -24,7 +24,7 @@ export class Checkout {
         const specificRemoveButton = this.basketItemRemoveButton.nth(smallestPriceIdx)
         await specificRemoveButton.waitFor()
         await specificRemoveButton.click()
-        await expect(this.basketCards).toHaveCount(itemBeforeRemoval - 1)
+        await expect(this.basketCards).toHaveCount(itemsBeforeRemoval - 1)
         //await this.page.pause()
     }
 
