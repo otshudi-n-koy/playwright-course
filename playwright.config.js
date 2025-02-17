@@ -44,6 +44,8 @@ const config = {
     trace: 'on-first-retry',
   },
 
+  
+
   /* Configure projects for major browsers */
   projects: [
     {
