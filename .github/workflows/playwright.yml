@@ -40,19 +40,11 @@ jobs:
           exit 1
 
       - name: Run playwright tests
-        run: npx playwright test --reporter=json,html
-        
-      - name: Generate Test Report
-        if: always()
-        uses: dorny/test-reporter@v1
-        with:
-          name: Playwright Tests
-          path: 'playwright-report/*.json'
-          reporter: playwright-json
+        run: npm run test:ci
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4  # Mise à jour vers v4
         with:
           name: playwright-report
           path: playwright-report/
