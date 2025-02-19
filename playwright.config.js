@@ -1,5 +1,5 @@
 // @ts-check
-const { devices } = require('@playwright/test');
+import { devices } from '@playwright/test';
 
 /**
  * Read environment variables from file.
@@ -23,6 +23,7 @@ const config = {
      */
     timeout: process.env.CI ? 10000 : 5000
   },
+  globalSetup: require.resolve("./globalSetup.js"),
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -108,4 +109,4 @@ const config = {
   // },
 };
 
-module.exports = config;
+export default config;

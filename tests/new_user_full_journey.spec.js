@@ -39,8 +39,8 @@ test("New user full end-to-end test journey", async ({ page }) => {
     await deliveryDetails.saveDetails()
     await deliveryDetails.continueToPayment()
 
-    //const paymentPage = new PaymentPage(page)
-    //await paymentPage.activateDiscount()
-    //await paymentPage.fillPaymentDetails(paymentDetails)
-    //await paymentPage.completePayment()
+    const paymentPage = new PaymentPage(page)
+    await paymentPage.activateDiscount()
+    await paymentPage.fillPaymentDetails(paymentDetails)
+    await paymentPage.completePayment()
 })
