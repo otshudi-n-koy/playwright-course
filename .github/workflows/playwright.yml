@@ -20,8 +20,18 @@ jobs:
         run: |
           chmod +x ./shopping-store-linux-amd64
           ./shopping-store-linux-amd64 &
-          # Wait for the application to start
-          sleep 5
+          # Wait for the application to start and verify it's accessible
+          timeout=30
+          while ! curl -s http://localhost:2221 > /dev/null; do
+            if [ "$timeout" -le "0" ]; then
+              echo "Application failed to start"
+              exit 1
+            fi
+            echo "Waiting for application to start... ($timeout seconds remaining)"
+            timeout=$((timeout-1))
+            sleep 1
+          done
+          echo "Application is ready!"
 
       - name: Run playwright tests
         run: npm run test:ci
