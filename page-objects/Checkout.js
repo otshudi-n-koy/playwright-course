@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test"
+import { timeout } from "../playwright.config"
 
 export class Checkout {
     constructor(page){
@@ -7,6 +8,8 @@ export class Checkout {
         this.basketCards = page.locator('[data-qa="basket-card"]')
         this.basketItemPrice = page.locator('[data-qa="basket-item-price"]')
         this.basketItemRemoveButton = page.locator('[data-qa="basket-card-remove-item"]')
+        this.continueToCheckoutButton = page.locator('[data-qa="continue-to-checkout"]')
+        this.registerButton = page.locator('[data-qa="go-to-signup-button"]')
     }
 
     removeCheapestProduct = async () => {
@@ -26,6 +29,12 @@ export class Checkout {
         await specificRemoveButton.click()
         await expect(this.basketCards).toHaveCount(itemsBeforeRemoval - 1)
         //await this.page.pause()
+    }
+
+    continueToCheckout = async () => {
+        await this.continueToCheckoutButton.waitFor()
+        await this.continueToCheckoutButton.click()
+        await this.page.waitForURL(/\/login/, {timeout: 3000})
     }
 
 }
