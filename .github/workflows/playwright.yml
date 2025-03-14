@@ -11,25 +11,23 @@ permissions:
 
 jobs:
   playwrighttests:
+    timeout-minutes: 60
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.51.0
-      env:
-        ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Cache node modules
-        uses: actions/cache@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
       - name: Start shopping store application
         run: |
@@ -66,7 +64,9 @@ jobs:
           retention-days: 30
 
   publish-allure:
+    if: always()
     needs: playwrighttests
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifacts
