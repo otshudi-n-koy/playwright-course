@@ -3,11 +3,17 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   playwrighttests:
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.50.1
+      image: mcr.microsoft.com/playwright:v1.51.0
       env:
         ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
     steps:
@@ -23,9 +29,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: |
-          npm ci
-          npm install -g allure-commandline
+        run: npm ci
 
       - name: Start shopping store application
         run: |
@@ -45,26 +49,13 @@ jobs:
       - name: Run playwright tests
         run: npm run test:ci
 
-      - name: Generate Allure Report
-        if: always()
-        run: |
-          allure generate allure-results -o allure-report --clean
-          
-      - name: Upload Allure Report
+      - name: Store test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report
-          path: allure-report/
+          name: allure-results
+          path: allure-results/
           retention-days: 30
-
-      - name: Deploy Allure Report to GitHub Pages
-        if: always()
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
-          publish_branch: gh-pages
 
       - name: Upload test results
         if: always()
@@ -73,3 +64,51 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+  publish-allure:
+    needs: playwrighttests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+
+      - name: Get Allure history
+        uses: actions/checkout@v4
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Generate Allure Report
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        with:
+          allure_results: allure-results
+          allure_history: allure-history
+          keep_reports: 20
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: allure-history
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Post the link to the report
+        if: always()
+        uses: Sibz/github-status-action@v1
+        with: 
+          authToken: ${{ secrets.GITHUB_TOKEN }}
+          context: 'Test Report'
+          state: 'success'
+          sha: ${{ github.event.pull_request.head.sha || github.sha }}
+          target_url: ${{ steps.deployment.outputs.page_url }}
