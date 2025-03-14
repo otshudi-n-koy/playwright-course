@@ -23,13 +23,9 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Install Allure commandline
         run: |
-          curl -o allure-2.24.1.tgz -OL https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.24.1/allure-commandline-2.24.1.tgz
-          tar -zxvf allure-2.24.1.tgz -C /opt/
-          ln -s /opt/allure-2.24.1/bin/allure /usr/local/bin/allure
+          npm ci
+          npm install -g allure-commandline
 
       - name: Start shopping store application
         run: |
