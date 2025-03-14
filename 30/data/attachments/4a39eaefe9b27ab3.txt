@@ -1,0 +1,73 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: New user full end-to-end test journey
+- Location: C:\Users\lil61\OneDrive\Documents\playwright-course\tests\new_user_full_journey.spec.js:14:5
+
+# Error details
+
+```
+Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:2221/
+Call log:
+  - navigating to "http://localhost:2221/", waiting until "load"
+
+    at ProductsPage.visit (C:\Users\lil61\OneDrive\Documents\playwright-course\page-objects\ProductsPage.js:15:25)
+    at C:\Users\lil61\OneDrive\Documents\playwright-course\tests\new_user_full_journey.spec.js:17:24
+```
+
+# Test source
+
+```ts
+   1 | import { expect } from "@playwright/test"
+   2 | import { Navigation } from "./Navigation.js"
+   3 | import { isDesktopViewport } from "../utils/isDesktopViewport.js"
+   4 |
+   5 | export class ProductsPage {
+   6 |     constructor(page) {
+   7 |         this.page = page
+   8 |
+   9 |         this.addButtons = page.locator('[data-qa="product-button"]')
+  10 |         this.sortDropdown = page.locator('[data-qa="sort-dropdown"]')
+  11 |         this.productTitle = page.locator('[data-qa="product-title"]')
+  12 |     }
+  13 |     
+  14 |     visit = async () => {
+> 15 |         await this.page.goto("/")
+     |                         ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:2221/
+  16 |     }
+  17 |
+  18 |     addProductToBasket = async (index) => {
+  19 |         const specificAddButton = this.addButtons.nth(index)
+  20 |         await specificAddButton.waitFor()
+  21 |         await expect(specificAddButton).toHaveText("Add to Basket")
+  22 |         const navigation = new Navigation(this.page)
+  23 |         // only desktop viewport
+  24 |         let basketCountBeforeAdding
+  25 |         if (isDesktopViewport(this.page)){
+  26 |             basketCountBeforeAdding = await navigation.getBasketCount()
+  27 |         }
+  28 |         
+  29 |         await specificAddButton.click()
+  30 |         await expect(specificAddButton).toHaveText("Remove from Basket")
+  31 |         // only desktop viewport
+  32 |         if (isDesktopViewport(this.page)){
+  33 |             const basketCountAfterAdding = await navigation.getBasketCount()
+  34 |             expect (basketCountAfterAdding).toBeGreaterThan(basketCountBeforeAdding)
+  35 |         }
+  36 |     }
+  37 |
+  38 |     sortByCheapest = async () => {
+  39 |         await this.sortDropdown.waitFor()
+  40 |         await this.productTitle.first().waitFor()
+  41 |         const productTitlesBeforeSorting = await this.productTitle.allInnerTexts()
+  42 |         await this.sortDropdown.selectOption("price-asc")
+  43 |         const productTitlesAfterSorting = await this.productTitle.allInnerTexts()
+  44 |         expect(productTitlesAfterSorting).not.toEqual(productTitlesBeforeSorting)
+  45 |     }
+  46 | }
+```
